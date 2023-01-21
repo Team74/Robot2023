@@ -8,6 +8,8 @@ import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -20,10 +22,11 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
+  SwerveModule testSwerveModule = new SwerveModule(14, 16, 0, 268.0);
+  XboxController driveController = new XboxController(0);
+
   @Override
-  public void robotInit() {
-    AHRS test = new AHRS();
-  }
+  public void robotInit() {}
 
   @Override
   public void robotPeriodic() {}
@@ -39,7 +42,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    //test
+    
+    testSwerveModule.setSwerveSpin(driveController.getRightY());
+    SmartDashboard.putNumber("Swerve Angle", testSwerveModule.getSwerveAngle());
+
   }
 
   @Override
