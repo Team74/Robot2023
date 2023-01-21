@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.CANSparkMax;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 
 /**
@@ -18,7 +21,9 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    AHRS test = new AHRS();
+  }
 
   @Override
   public void robotPeriodic() {}
