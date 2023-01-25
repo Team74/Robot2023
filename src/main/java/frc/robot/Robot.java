@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.sql.DriverAction;
+
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 
@@ -42,8 +44,19 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    
-    testSwerveModule.setSwerveSpin(driveController.getRightY());
+    double driveControllerRightX = driveController.getRightX();
+    double driveControllerRightY = driveController.getRightY();
+
+    if(driveControllerRightX < 0.05 && driveControllerRightX > -0.05 && driveControllerRightY < 0.05 && driveControllerRightY > -0.05){
+      driveControllerRightX = 0;
+      driveControllerRightY = 0;
+      testSwerveModule.goToAngle(0.0);
+    }else{
+      testSwerveModule.goToAngle(Math.atan2(driveControllerRightY,driveControllerRightX));
+    }
+
+    testSwerveModule.setSwerveSpin(driveControllerRightY);
+
     SmartDashboard.putNumber("Swerve Angle", testSwerveModule.getSwerveAngle());
 
   }
