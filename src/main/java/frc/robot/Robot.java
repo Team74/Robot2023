@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.sql.DriverAction;
 
+import javax.lang.model.util.ElementScanner14;
+
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 
@@ -47,18 +49,32 @@ public class Robot extends TimedRobot {
     double driveControllerRightX = driveController.getRightX();
     double driveControllerRightY = driveController.getRightY();
 
-    if(driveControllerRightX < 0.05 && driveControllerRightX > -0.05 && driveControllerRightY < 0.05 && driveControllerRightY > -0.05){
+    if(driveControllerRightX < 0.05 && driveControllerRightX > -0.05){
       driveControllerRightX = 0;
+    }
+    if(driveControllerRightY < 0.05 && driveControllerRightY > -0.05){
       driveControllerRightY = 0;
-      testSwerveModule.goToAngle(0.0);
+    }
+    
+    double targetAngle = Math.atan2(driveControllerRightY,driveControllerRightX);
+    targetAngle = targetAngle*180/Math.PI;
+
+    if(driveControllerRightY < 0){
+      targetAngle = targetAngle + 90 + 360;
+    }else if(driveControllerRightY == 0 && driveControllerRightX == 0){
+      targetAngle = 0.0;
     }else{
-      testSwerveModule.goToAngle(Math.atan2(driveControllerRightY,driveControllerRightX));
+      targetAngle = targetAngle + 90;
     }
 
-    testSwerveModule.setSwerveSpin(driveControllerRightY);
+    targetAngle = targetAngle % 360;
+    
+    testSwerveModule.goToAngle(targetAngle);
+    testSwerveModule.setSwerveSpin(Math.sqrt(Math.pow(driveControllerRightX, 2) + Math.pow(driveControllerRightY, 2)));
 
+    SmartDashboard.putNumber("Swerve Drive Speed", testSwerveModule.getDriveSpeed());
     SmartDashboard.putNumber("Swerve Angle", testSwerveModule.getSwerveAngle());
-
+    SmartDashboard.putNumber("Target Angle", targetAngle);
   }
 
   @Override
