@@ -28,7 +28,7 @@ public class Robot extends TimedRobot {
    */
   SwerveModule testSwerveModule = new SwerveModule(14, 16, 0, 268.0);
   XboxController driveController = new XboxController(0);
-  private Intake intake = new Intake(1,2);
+  private Intake intake = new Intake(17,13);
 
   @Override
   public void robotInit() {}
@@ -79,6 +79,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Swerve Drive Speed", testSwerveModule.getDriveSpeed());
     SmartDashboard.putNumber("Swerve Angle", testSwerveModule.getSwerveAngle());
     SmartDashboard.putNumber("Target Angle", targetAngle);
+
+    intakeControl(driveController);
+
   }
 
   @Override
@@ -98,4 +101,17 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {}
+
+  public void intakeControl(XboxController controller) {
+    boolean rightBumper = controller.getRightBumper();
+    boolean leftBumper = controller.getLeftBumper();
+
+    if(rightBumper) {
+      intake.intakeObject();
+    }else if(leftBumper){
+      intake.outtakeObject();
+    }else{
+      intake.stopMotors();
+    }
+  }
 }
