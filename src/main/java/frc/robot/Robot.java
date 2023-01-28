@@ -69,28 +69,16 @@ public class Robot extends TimedRobot {
     }
 
     targetAngle = targetAngle % 360;
+
+    testSwerveModule.updateDrivePID();
     
     testSwerveModule.goToAngle(targetAngle);
-    testSwerveModule.setSwerveSpin(Math.sqrt(Math.pow(driveControllerRightX, 2) + Math.pow(driveControllerRightY, 2)));
+    double driveSpeed = Math.sqrt(Math.pow(driveControllerRightX, 2) + Math.pow(driveControllerRightY, 2));
+    testSwerveModule.setDriveSpeed(driveSpeed * 3.0);
 
     SmartDashboard.putNumber("Swerve Drive Speed", testSwerveModule.getDriveSpeed());
     SmartDashboard.putNumber("Swerve Angle", testSwerveModule.getSwerveAngle());
     SmartDashboard.putNumber("Target Angle", targetAngle);
-    
-    intakeControl(driveController);
-  }
-  public void intakeControl(XboxController controller) {
-    boolean rightBumper = controller.getRightBumper();
-    boolean leftBumper = controller.getLeftBumper();
-
-    if(rightBumper) {
-      intake.intakeObject();
-    }else if(leftBumper){
-      intake.outtakeObject();
-    }else{
-      intake.stopMotors();
-    }
-   
   }
 
   @Override

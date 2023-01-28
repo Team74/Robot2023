@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
@@ -15,27 +16,59 @@ public class SwerveModule {
     CANSparkMax driveMotor;
     DutyCycleEncoder swerveEncoder;
     double encoderOffset;
+
     RelativeEncoder driveEncoder;
+    SparkMaxPIDController drivePID;
 
     PIDController anglePID;
+
+    double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput;
 
     SwerveModule(int turnMotorID, int driveMotorID, int turnEncoderPort, double turnEncoderOffset){
         turnMotor = new CANSparkMax(turnMotorID, MotorType.kBrushless);
         driveMotor = new CANSparkMax(driveMotorID, MotorType.kBrushless);
         swerveEncoder = new DutyCycleEncoder(turnEncoderPort);
         encoderOffset = turnEncoderOffset;
-        driveEncoder = driveMotor.getEncoder();
 
-        anglePID = new PIDController(1.0, 0.0, 0.01);
+        driveEncoder = driveMotor.getEncoder();
+        drivePID = driveMotor.getPIDController();
+
+            // PID coefficients
+        kP = 6e-5; 
+        kI = 0;
+        kD = 0; 
+        kIz = 0; 
+        kFF = 0.000015; 
+        kMaxOutput = 1; 
+        kMinOutput = -1;
+
+        drivePID.setP(kP);
+        drivePID.setI(kI);
+        drivePID.setD(kD);
+        drivePID.setIZone(kIz);
+        drivePID.setFF(kFF);
+        drivePID.setOutputRange(kMinOutput, kMaxOutput);
+
+        SmartDashboard.putNumber("P Gain", kP);
+        SmartDashboard.putNumber("I Gain", kI);
+        SmartDashboard.putNumber("D Gain", kD);
+        SmartDashboard.putNumber("I Zone", kIz);
+        SmartDashboard.putNumber("Feed Forward", kFF);
+        SmartDashboard.putNumber("Max Output", kMaxOutput);
+        SmartDashboard.putNumber("Min Output", kMinOutput);
+
+        anglePID = new PIDController(0.005, 0.0, 0.0000625);
 
         anglePID.enableContinuousInput(0.0, 360.0);
-        anglePID.setTolerance(2,3);
+        anglePID.setTolerance(3,3);
         anglePID.reset();
 
     }
 
     public double getDriveSpeed(){
-        return driveEncoder.getVelocity();
+        double speed = driveEncoder.getVelocity();
+        speed = speed * 13 * 29 / 108.0 / 60 / 100;
+        return speed;
     }
 
     public double getSwerveAngle(){
@@ -43,6 +76,7 @@ public class SwerveModule {
         angle = angle * 360;
         angle = angle - encoderOffset;
         angle = angle % 360;
+        angle = (angle + 360) % 360;
         SmartDashboard.putNumber("Current Angle", angle);
         return angle;
     }
@@ -52,8 +86,7 @@ public class SwerveModule {
         SmartDashboard.putNumber("Desired Angle", desiredAngle);
         double rotationMotorSpeed = anglePID.calculate(getSwerveAngle(), desiredAngle);
         
-        rotationMotorSpeed = rotationMotorSpeed * 0.0055;
-        rotationMotorSpeed = MathUtil.clamp(rotationMotorSpeed, -0.5, 0.5);
+        rotationMotorSpeed = MathUtil.clamp(rotationMotorSpeed, -0.75, 0.75);
 
         if(anglePID.atSetpoint()){
             rotationMotorSpeed = 0.0;
@@ -64,7 +97,37 @@ public class SwerveModule {
 
     }
 
-    public void setSwerveSpin(double swervePower){
+    public void setDrivePower(double swervePower){
         driveMotor.set(swervePower);
     }
+
+    public void updateDrivePID(){
+        // read PID coefficients from SmartDashboard
+        double p = SmartDashboard.getNumber("P Gain", 0);
+        double i = SmartDashboard.getNumber("I Gain", 0);
+        double d = SmartDashboard.getNumber("D Gain", 0);
+        double iz = SmartDashboard.getNumber("I Zone", 0);
+        double ff = SmartDashboard.getNumber("Feed Forward", 0);
+        double max = SmartDashboard.getNumber("Max Output", 0);
+        double min = SmartDashboard.getNumber("Min Output", 0);
+
+        // if PID coefficients on SmartDashboard have changed, write new values to controller
+        if((p != kP)) { drivePID.setP(p); kP = p; }
+        if((i != kI)) { drivePID.setI(i); kI = i; }
+        if((d != kD)) { drivePID.setD(d); kD = d; }
+        if((iz != kIz)) { drivePID.setIZone(iz); kIz = iz; }
+        if((ff != kFF)) { drivePID.setFF(ff); kFF = ff; }
+        if((max != kMaxOutput) || (min != kMinOutput)) { 
+        drivePID.setOutputRange(min, max); 
+        kMinOutput = min; kMaxOutput = max; 
+        }
+    }
+
+    public void setDriveSpeed(double swerveSpeed){
+        SmartDashboard.putNumber("Desired Wheel Speed", swerveSpeed);
+        swerveSpeed = swerveSpeed * 108 * 60 * 100 / 13.0 / 29.0;
+
+       drivePID.setReference(swerveSpeed, CANSparkMax.ControlType.kVelocity);
+    }
+    
 }
