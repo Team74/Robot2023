@@ -34,13 +34,13 @@ public class SwerveModule {
         drivePID = driveMotor.getPIDController();
 
             // PID coefficients
-        kP = 6e-5; 
+        kP = 0.000250; 
         kI = 0;
-        kD = 0; 
+        kD = 0.050000; 
         kIz = 0; 
-        kFF = 0.000015; 
-        kMaxOutput = 1; 
-        kMinOutput = -1;
+        kFF = 0.000180; 
+        kMaxOutput = 0.75; 
+        kMinOutput = -0.75;
 
         drivePID.setP(kP);
         drivePID.setI(kI);
@@ -57,10 +57,10 @@ public class SwerveModule {
         SmartDashboard.putNumber("Max Output", kMaxOutput);
         SmartDashboard.putNumber("Min Output", kMinOutput);
 
-        anglePID = new PIDController(0.005, 0.0, 0.0000625);
+        anglePID = new PIDController(0.005, 0.0, 0.0001);
 
         anglePID.enableContinuousInput(0.0, 360.0);
-        anglePID.setTolerance(3,3);
+        anglePID.setTolerance(4,3);
         anglePID.reset();
 
     }
@@ -77,13 +77,10 @@ public class SwerveModule {
         angle = angle - encoderOffset;
         angle = angle % 360;
         angle = (angle + 360) % 360;
-        SmartDashboard.putNumber("Current Angle", angle);
         return angle;
     }
 
     public void goToAngle(double desiredAngle){
-
-        SmartDashboard.putNumber("Desired Angle", desiredAngle);
         double rotationMotorSpeed = anglePID.calculate(getSwerveAngle(), desiredAngle);
         
         rotationMotorSpeed = MathUtil.clamp(rotationMotorSpeed, -0.75, 0.75);
@@ -93,8 +90,6 @@ public class SwerveModule {
         }
 
         turnMotor.set(rotationMotorSpeed);
-        SmartDashboard.putNumber("Swerve Rotation Speed", rotationMotorSpeed);
-
     }
 
     public void setDrivePower(double swervePower){
@@ -124,7 +119,6 @@ public class SwerveModule {
     }
 
     public void setDriveSpeed(double swerveSpeed){
-        SmartDashboard.putNumber("Desired Wheel Speed", swerveSpeed);
         swerveSpeed = swerveSpeed * 108 * 60 * 100 / 13.0 / 29.0;
 
        drivePID.setReference(swerveSpeed, CANSparkMax.ControlType.kVelocity);

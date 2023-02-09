@@ -26,12 +26,27 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
-  SwerveModule testSwerveModule = new SwerveModule(14, 16, 0, 268.0);
+  AHRS gyro = new AHRS();
+  SwerveModule[] swerveModules = {
+    new SwerveModule(3, 4, 3, 71.1), //Front Left
+    new SwerveModule(1, 2, 0, 30.6), //Front Right
+    new SwerveModule(5, 6, 2, 335.8), //Back Left
+    new SwerveModule(7, 8, 1, 184.7)  //Back Right
+  };
+
   XboxController driveController = new XboxController(0);
-  private Intake intake = new Intake(17,13);
+  private Intake intake = new Intake(17,14);
+  private DriveBase driveBase = new DriveBase(swerveModules, gyro);
+
+  double speedMode;
 
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    driveBase.resetGyro();
+    double xVelocity;
+    double yVelocity;
+    double rotationVelocity;
+  }
 
   @Override
   public void robotPeriodic() {}
@@ -43,45 +58,62 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {}
 
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    speedMode = 2;
+  }
 
   @Override
   public void teleopPeriodic() {
-    double driveControllerRightX = driveController.getRightX();
-    double driveControllerRightY = driveController.getRightY();
+    double xVelocity = driveController.getLeftX();
+    double yVelocity = -driveController.getLeftY();
+    double rotationVelocity = driveController.getRightX();
 
-    if(driveControllerRightX < 0.05 && driveControllerRightX > -0.05){
-      driveControllerRightX = 0;
+    if(xVelocity < 0.05 && xVelocity > -0.05){
+      xVelocity = 0;
     }
-    if(driveControllerRightY < 0.05 && driveControllerRightY > -0.05){
-      driveControllerRightY = 0;
+    if(yVelocity < 0.05 && yVelocity > -0.05){
+      yVelocity = 0;
     }
-    
-    double targetAngle = Math.atan2(driveControllerRightY,driveControllerRightX);
-    targetAngle = targetAngle*180/Math.PI;
-
-    if(driveControllerRightY < 0){
-      targetAngle = targetAngle + 90 + 360;
-    }else if(driveControllerRightY == 0 && driveControllerRightX == 0){
-      targetAngle = 0.0;
-    }else{
-      targetAngle = targetAngle + 90;
+    if(rotationVelocity < 0.05 && rotationVelocity > -0.05){
+      rotationVelocity = 0;
     }
 
-    targetAngle = targetAngle % 360;
+    if(driveController.getRightBumperPressed() & speedMode < 3){
+      speedMode = speedMode + 1;
+    } 
+    if(driveController.getLeftBumperPressed() & speedMode > 1){
+      speedMode = speedMode -                             1;
+    }
 
-    testSwerveModule.updateDrivePID();
-    
-    testSwerveModule.goToAngle(targetAngle);
-    double driveSpeed = Math.sqrt(Math.pow(driveControllerRightX, 2) + Math.pow(driveControllerRightY, 2));
-    testSwerveModule.setDriveSpeed(driveSpeed * 3.0);
+    if(speedMode == 1){
+      xVelocity = xVelocity * 1;
+      yVelocity = yVelocity * 1;
+      rotationVelocity = rotationVelocity * 100;
+    } else if(speedMode == 2){
+      xVelocity = xVelocity * 2;
+      yVelocity = yVelocity * 2;
+      rotationVelocity = rotationVelocity * 150;
+    } else if(speedMode == 3){
+      xVelocity = xVelocity * 3;
+      yVelocity = yVelocity * 3;
+      rotationVelocity = rotationVelocity * 200;
+    } 
 
-    SmartDashboard.putNumber("Swerve Drive Speed", testSwerveModule.getDriveSpeed());
-    SmartDashboard.putNumber("Swerve Angle", testSwerveModule.getSwerveAngle());
-    SmartDashboard.putNumber("Target Angle", targetAngle);
+    if(driveController.getYButtonPressed()){
+      driveBase.resetGyro();
+    }
+
+    driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
+
+    SmartDashboard.putNumber("X Velocity", xVelocity);
+    SmartDashboard.putNumber("Y Velocity", yVelocity);
+    SmartDashboard.putNumber("R Velocity", rotationVelocity);
+
 
     intakeControl(driveController);
 
+    driveBase.printSwerveSpeeds();
+    driveBase.updatePIDLoops();
   }
 
   @Override
