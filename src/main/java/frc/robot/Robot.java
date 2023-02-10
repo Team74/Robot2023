@@ -11,6 +11,7 @@ import javax.lang.model.util.ElementScanner14;
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -35,10 +36,14 @@ public class Robot extends TimedRobot {
   };
 
   XboxController driveController = new XboxController(0);
+  XboxController opController = new XboxController(1);
+
   private Intake intake = new Intake(17,14);
   private DriveBase driveBase = new DriveBase(swerveModules, gyro);
 
-  double speedMode;
+  int speedMode;
+
+  int elbowLevel = 1;
 
   @Override
   public void robotInit() {
@@ -82,7 +87,7 @@ public class Robot extends TimedRobot {
       speedMode = speedMode + 1;
     } 
     if(driveController.getLeftBumperPressed() & speedMode > 1){
-      speedMode = speedMode -                             1;
+      speedMode = speedMode - 1;
     }
 
     if(speedMode == 1){
@@ -99,6 +104,24 @@ public class Robot extends TimedRobot {
       rotationVelocity = rotationVelocity * 200;
     } 
 
+    if(opController.getPOV() == 0.0){
+      elbowLevel++;
+    }else if(opController.getPOV() == 180.0){
+      elbowLevel--;
+    }
+
+    elbowLevel = MathUtil.clamp(elbowLevel, 1, 8);
+
+    if(opController.getAButton()){
+      elbowLevel = 1;
+    }else if(opController.getBButton()){
+      elbowLevel = 2;
+    }else if(opController.getYButtonPressed()){
+      elbowLevel = 3;
+    }else if(opController.getXButton()){
+      elbowLevel = 4;
+    }
+
     if(driveController.getYButtonPressed()){
       driveBase.resetGyro();
     }
@@ -109,11 +132,12 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Y Velocity", yVelocity);
     SmartDashboard.putNumber("R Velocity", rotationVelocity);
 
+    driveBase.printSwerveSpeeds();
+    driveBase.updatePIDLoops();
 
     intakeControl(driveController);
 
-    driveBase.printSwerveSpeeds();
-    driveBase.updatePIDLoops();
+    
   }
 
   @Override
