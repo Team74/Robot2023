@@ -12,6 +12,9 @@ import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,8 +41,10 @@ public class Robot extends TimedRobot {
   XboxController driveController = new XboxController(0);
   XboxController opController = new XboxController(1);
 
-  private Intake intake = new Intake(17,14);
+  private Intake intake = new Intake(17, 14, 4);
   private DriveBase driveBase = new DriveBase(swerveModules, gyro);
+
+  NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 
   int speedMode;
 
@@ -69,6 +74,18 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+
+    NetworkTableEntry tx = table.getEntry("tx");
+    NetworkTableEntry ty = table.getEntry("ty");
+    NetworkTableEntry ta = table.getEntry("ta");
+
+    //NetworkTableEntry ledMode = table.getEntry("ledMode");
+    //ledMode.setNumber(0);      // 1 = force off,   0 = follow pipeline
+
+    double x = tx.getDouble(0.0);
+    double y = ty.getDouble(0.0);
+    double area = ta.getDouble(0.0);
+
     double xVelocity = driveController.getLeftX();
     double yVelocity = -driveController.getLeftY();
     double rotationVelocity = driveController.getRightX();
@@ -126,7 +143,11 @@ public class Robot extends TimedRobot {
       driveBase.resetGyro();
     }
 
-    driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
+    if(driveController.getBButton()){
+      driveBase.autoBalance();
+    }else{
+      driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
+    }
 
     SmartDashboard.putNumber("X Velocity", xVelocity);
     SmartDashboard.putNumber("Y Velocity", yVelocity);
@@ -135,7 +156,7 @@ public class Robot extends TimedRobot {
     driveBase.printSwerveSpeeds();
     driveBase.updatePIDLoops();
 
-    intakeControl(driveController);
+    intakeControl(opController);
 
     
   }

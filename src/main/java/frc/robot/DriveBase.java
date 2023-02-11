@@ -38,6 +38,12 @@ public class DriveBase {
         return angle;
     }
 
+    public double getRollAngle(){
+        double angle = gyro.getRoll();
+        SmartDashboard.putNumber("Robot Pitch", angle);
+        return angle;
+    }
+
     public void resetGyro(){
         gyro.reset();
     }
@@ -80,5 +86,25 @@ public class DriveBase {
             swerveModules[i].goToAngle(optimizedModuleState.angle.getDegrees());
             swerveModules[i].setDriveSpeed(optimizedModuleState.speedMetersPerSecond);
         }
+    }
+
+    public void autoBalance(){
+        double velocity = 1;
+
+        if(getGyroAngle() > 180){
+            if(getRollAngle() < -5){
+                velocity = -velocity;
+            }else if(getRollAngle() <= 5){
+                velocity = 0;
+            }
+        }else{
+            if(getRollAngle() > 5){
+                velocity = -velocity;
+            }else if(getRollAngle() >= -5){
+                velocity = 0;
+            }
+        }
+
+        moveRobotFieldOriented(0.0, velocity, 0.0);
     }
 }
