@@ -32,16 +32,16 @@ public class Robot extends TimedRobot {
    */
   AHRS gyro = new AHRS();
   SwerveModule[] swerveModules = {
-    new SwerveModule(3, 4, 3, 71.1), //Front Left
-    new SwerveModule(1, 2, 0, 30.6), //Front Right
-    new SwerveModule(5, 6, 2, 335.8), //Back Left
-    new SwerveModule(7, 8, 1, 184.7)  //Back Right
+    new SwerveModule(14, 16, 0, 67.7), //Front Left
+    new SwerveModule(19, 18, 1, 101.2), //Front Right
+    new SwerveModule(17 , 12, 2, 44.8), //Back Left
+    new SwerveModule(10, 11, 3, 354.4)  //Back Right
   };
 
   XboxController driveController = new XboxController(0);
   XboxController opController = new XboxController(1);
 
-  private Intake intake = new Intake(17, 14, 4);
+  private Intake intake = new Intake(42, 43, 4);
   private DriveBase driveBase = new DriveBase(swerveModules, gyro);
 
   NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
@@ -144,7 +144,7 @@ public class Robot extends TimedRobot {
     }
 
     if(driveController.getBButton()){
-      driveBase.autoBalance();
+      //driveBase.autoBalance();
     }else{
       driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
     }
@@ -153,6 +153,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Y Velocity", yVelocity);
     SmartDashboard.putNumber("R Velocity", rotationVelocity);
 
+    driveBase.printSwerveAngles();
     driveBase.printSwerveSpeeds();
     driveBase.updatePIDLoops();
 

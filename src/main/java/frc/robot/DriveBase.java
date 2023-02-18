@@ -15,8 +15,8 @@ public class DriveBase {
     SwerveDriveKinematics driveKinematics;
     ChassisSpeeds robotSpeed;
     SwerveModuleState[] moduleStates;
-    double forwardOffset = 0.38;
-    double sideOffset = 0.21;
+    double forwardOffset = 0.225;
+    double sideOffset = 0.35;
 
     DriveBase(SwerveModule[] swerveModules, AHRS gyro){
         this.gyro = gyro;
@@ -73,7 +73,7 @@ public class DriveBase {
         for(int i = 0; i < 4; i++){
             SwerveModuleState optimizedModuleState = SwerveModuleState.optimize(moduleStates[i], Rotation2d.fromDegrees(swerveModules[i].getSwerveAngle()));
             swerveModules[i].goToAngle(optimizedModuleState.angle.getDegrees());
-            swerveModules[i].setDriveSpeed(optimizedModuleState.speedMetersPerSecond);
+            swerveModules[i].setDrivePower(optimizedModuleState.speedMetersPerSecond/6);
         }
     }
 
@@ -106,5 +106,9 @@ public class DriveBase {
         }
 
         moveRobotFieldOriented(0.0, velocity, 0.0);
+    }
+
+    public void spinSwerve1(){
+        swerveModules[0].setRotationPower(0.2);
     }
 }

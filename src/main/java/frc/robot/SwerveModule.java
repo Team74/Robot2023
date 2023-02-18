@@ -80,6 +80,10 @@ public class SwerveModule {
         return angle;
     }
 
+    public void setRotationPower(double power){
+        turnMotor.set(power);
+    }
+
     public void goToAngle(double desiredAngle){
         double rotationMotorSpeed = anglePID.calculate(getSwerveAngle(), desiredAngle);
         
