@@ -32,7 +32,7 @@ public class DriveBase {
     public double getGyroAngle(){
         double angle = gyro.getAngle();
         angle = angle % 360;
-        angle = angle + 360;
+        angle = angle + 540;
         angle = angle % 360;
         SmartDashboard.putNumber("Robot Angle", angle);
         return angle;
@@ -73,7 +73,7 @@ public class DriveBase {
         for(int i = 0; i < 4; i++){
             SwerveModuleState optimizedModuleState = SwerveModuleState.optimize(moduleStates[i], Rotation2d.fromDegrees(swerveModules[i].getSwerveAngle()));
             swerveModules[i].goToAngle(optimizedModuleState.angle.getDegrees());
-            swerveModules[i].setDrivePower(optimizedModuleState.speedMetersPerSecond/6);
+            swerveModules[i].setDriveSpeed(optimizedModuleState.speedMetersPerSecond/6);
         }
     }
 

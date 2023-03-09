@@ -6,80 +6,116 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Arm {
 
-    CANSparkMax elbowMotor;
-    PIDController elbowPID;
-    DutyCycleEncoder elbowEncoder;
+    CANSparkMax shoulderMotor;
+    PIDController shoulderPID;
+    DutyCycleEncoder shoulderEncoder;
 
-    
-    Arm(int elbowMotorID, int elbowEncoderPort){
+    double kP, kI, kD, kFF;
 
-        elbowMotor = new CANSparkMax(elbowMotorID, MotorType.kBrushless);
-        elbowEncoder = new DutyCycleEncoder(elbowEncoderPort);
+    double encoderOffset = 111.15;
+    double lastSavedAngle;
+    double lastTargetPosition;
 
-        elbowPID = new PIDController(0.0, 0.0, 0.0);
+    Arm(int shoulderMotorID, int shoulderEncoderPort){
 
-        elbowPID.setTolerance(0,0);
-        elbowPID.reset();
+        shoulderMotor = new CANSparkMax(shoulderMotorID, MotorType.kBrushless);
+        shoulderEncoder = new DutyCycleEncoder(shoulderEncoderPort);
+
+        lastSavedAngle = 0.0;
+        lastTargetPosition = 0.0;
+
+        // PID coefficients
+        kP = 0.010000; 
+        kI = 0.000100;
+        kD = 0.000000; 
+        kFF = 0.001500; 
+
+        SmartDashboard.putNumber("P Gain", kP);
+        SmartDashboard.putNumber("I Gain", kI);
+        SmartDashboard.putNumber("D Gain", kD);
+        SmartDashboard.putNumber("I Zone", 0.0);
+        SmartDashboard.putNumber("Feed Forward", kFF);
+        SmartDashboard.putNumber("Max Output", 0.0);
+        SmartDashboard.putNumber("Min Output", 0.0);
+
+        shoulderPID = new PIDController(kP, kI, kD);
+
+        shoulderPID.setTolerance(0.5,5.0);
+        shoulderPID.reset();
     }
 
-    public double getElbowPosition(){
-        double angle = elbowEncoder.get();
+    public void setStart(){
+        lastSavedAngle = 0.0;
+        lastTargetPosition = 0.0;
+    }
+
+    public void updateShoulderPID(){
+        // read PID coefficients from SmartDashboard
+        double p = SmartDashboard.getNumber("P Gain", 0);
+        double i = SmartDashboard.getNumber("I Gain", 0);
+        double d = SmartDashboard.getNumber("D Gain", 0);
+        double ff = SmartDashboard.getNumber("Feed Forward", 0);
+
+        // if PID coefficients on SmartDashboard have changed, write new values to controller
+        if((p != kP)) { shoulderPID.setP(p); kP = p; }
+        if((i != kI)) { shoulderPID.setI(i); kI = i; }
+        if((d != kD)) { shoulderPID.setD(d); kD = d; }
+        if((ff != kFF)) { kFF = ff;}
+    }
+
+    public double getShoulderPosition(){
+        double angle = shoulderEncoder.get();
+
+        angle = angle * 120;
+        angle = angle + encoderOffset;
+        angle = angle % 120;
+        angle = (angle + 120) % 120;
+        angle = (-1.0* angle) + 120;
+        if(angle > 115){
+            angle = angle - 120;
+        }
+
+        SmartDashboard.putNumber("Shoulder Position", angle);
+
+        lastSavedAngle = angle;
         return angle;
     }
 
-    public void moveElbow(double rotationPower){
-        elbowMotor.set(rotationPower);
+    public void moveShoulder(double rotationPower){
+        shoulderMotor.set(rotationPower);
     }
 
-    public void setElbowPosition(double targetPosition, boolean noPower){
-        double elbowMotorPower = elbowPID.calculate(getElbowPosition(), targetPosition);
-        
-        elbowMotorPower = MathUtil.clamp(elbowMotorPower, -0.75, 0.75);
-        
-        if(elbowPID.atSetpoint()){
-            if(noPower){
-                elbowMotorPower = 0.0;
-            }else{
-                elbowMotorPower = 0.05;
-            }
+    public void setShoulderPosition(double targetPosition){
+        if(targetPosition < lastTargetPosition - 1){
+            targetPosition = lastTargetPosition - 1;
+        }else if(targetPosition > lastTargetPosition + 1){
+            targetPosition = lastTargetPosition + 1;
         }
 
-        elbowMotor.set(elbowMotorPower);
+        SmartDashboard.putNumber("Target Shoulder", targetPosition);
+        lastTargetPosition = targetPosition;
+
+        double shoulderMotorPower = shoulderPID.calculate(getShoulderPosition(), targetPosition);
+                
+        if(shoulderPID.atSetpoint()){
+            shoulderMotorPower = 0.0;
+        }
+
+        shoulderMotorPower = MathUtil.clamp(shoulderMotorPower, -0.4, 0.4);
+
+        shoulderMotorPower += kFF * targetPosition;
+
+        SmartDashboard.putNumber("Shoulder Power", shoulderMotorPower);
+
+        shoulderMotor.set(shoulderMotorPower);
     }
 
-    public void setElbowLevel(int elbowLevel){
-        double targetPosition = 0.0;
-
-        switch (elbowLevel) {
-            case 1: targetPosition = 10.0;
-                    break;
-
-            case 2: targetPosition = 20.0;
-                    break;
-
-            case 3: targetPosition = 30.0;
-                    break;
-
-            case 4: targetPosition = 40.0;
-                    break;
-
-            case 5: targetPosition = 50.0;
-                    break;
-
-            case 6: targetPosition = 60.0;
-                    break;
-
-            case 7: targetPosition = 70.0;
-                    break;
-
-            case 8: targetPosition = 80.0;
-                    break;
-        }
-
-        setElbowPosition(targetPosition, false);
+    public void setShoulderPower(double power){
+        shoulderMotor.set(power);
     }
 
 }

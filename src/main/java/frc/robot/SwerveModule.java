@@ -33,12 +33,12 @@ public class SwerveModule {
         driveEncoder = driveMotor.getEncoder();
         drivePID = driveMotor.getPIDController();
 
-            // PID coefficients
-        kP = 0.000250; 
+        // PID coefficients
+        kP = 0.000000; 
         kI = 0;
-        kD = 0.050000; 
+        kD = 0.000000; 
         kIz = 0; 
-        kFF = 0.000180; 
+        kFF = 0.001050; 
         kMaxOutput = 0.75; 
         kMinOutput = -0.75;
 
@@ -48,14 +48,6 @@ public class SwerveModule {
         drivePID.setIZone(kIz);
         drivePID.setFF(kFF);
         drivePID.setOutputRange(kMinOutput, kMaxOutput);
-
-        SmartDashboard.putNumber("P Gain", kP);
-        SmartDashboard.putNumber("I Gain", kI);
-        SmartDashboard.putNumber("D Gain", kD);
-        SmartDashboard.putNumber("I Zone", kIz);
-        SmartDashboard.putNumber("Feed Forward", kFF);
-        SmartDashboard.putNumber("Max Output", kMaxOutput);
-        SmartDashboard.putNumber("Min Output", kMinOutput);
 
         anglePID = new PIDController(0.005, 0.0, 0.0001);
 

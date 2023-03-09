@@ -19,7 +19,9 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -46,7 +48,29 @@ public class Robot extends TimedRobot {
 
   private Intake intake = new Intake(5, 6, 9);
   private Arm arm = new Arm(4, 4);
+
+  private static final String kDefaultAuto = "Default";
+  private static final String kAutoSubstation1 = "AutonSubstation1";
+  private static final String kAutoSubstation2 = "AutonSubstation2";
+  private static final String kAutoCenter = "AutonCenter";
+  private static final String kAutoFieldEdge1 = "AutonFieldEdge1";
+  private static final String kAutoFieldEdge2 = "AutonFieldEdge2";
+
+
+  private static final String kBlue = "Blue";
+  private static final String kRed = "Red";
+
+  private String m_autoSelected;
+  private final SendableChooser<String> m_auto_chooser = new SendableChooser<>();
+
+  private boolean m_colorSelected;
+  private final SendableChooser<String> m_color_chooser = new SendableChooser<>();
+
+  private final Timer m_timer = new Timer();
+
   private DriveBase driveBase = new DriveBase(swerveModules, gyro);
+
+  private Auton auton;
 
   NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 
@@ -58,6 +82,8 @@ public class Robot extends TimedRobot {
 
   boolean armOveride = false;
 
+  double time = 0.0;
+  
   @Override
   public void robotInit() {
     UsbCamera camera = CameraServer.startAutomaticCapture(0);
@@ -69,16 +95,99 @@ public class Robot extends TimedRobot {
 
     elbowPosition = 0;
     arm.setStart();
+  
+    m_auto_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_auto_chooser.addOption("AutonSubstation1", kAutoSubstation1);
+    m_auto_chooser.addOption("AutonSubstation2", kAutoSubstation2);
+    m_auto_chooser.addOption("AutonCenter", kAutoCenter);
+    m_auto_chooser.addOption("AutonFieldEdge1", kAutoFieldEdge1);
+    m_auto_chooser.addOption("AutonFieldEdge2", kAutoFieldEdge2);
+
+    
+    m_color_chooser.setDefaultOption("Blue", kBlue);
+    m_color_chooser.addOption("Red", kRed);
+
+    SmartDashboard.putData("Auton Choices 1", m_auto_chooser);
+    SmartDashboard.putData("Auton Color Choices 1", m_color_chooser);
+  
   }
 
   @Override
   public void robotPeriodic() {}
 
   @Override
-  public void autonomousInit() {}
+  public void autonomousInit() {
+    m_timer.reset();
+    m_timer.start();
+
+    m_autoSelected = m_auto_chooser.getSelected();
+
+    if(m_color_chooser.getSelected() == kBlue){
+      m_colorSelected = true;
+    }else{
+      m_colorSelected = false;
+    }
+
+    System.out.println("Auto selected: " + m_autoSelected);
+    System.out.println("Auto selected: " + m_autoSelected);
+
+
+    switch (m_autoSelected) {
+
+      case kAutoSubstation1:
+        // Put custom auto code here
+        auton = new AutonSubstation1(driveBase, arm, intake);
+
+        break;
+      case kAutoSubstation2:
+        // Put custom auto code here
+        auton = new AutonSubstation2(driveBase, arm, intake);
+
+        break;
+      case kAutoCenter:
+        // Put custom auto code here
+        auton = new AutonCenter(driveBase, arm, intake);
+
+        break;
+      case kAutoFieldEdge1:
+        // Put custom auto code here
+        auton = new AutonFieldEdge1(driveBase, arm, intake);
+
+        break;
+      case kAutoFieldEdge2:
+        // Put custom auto code here
+        auton = new AutonFieldEdge2(driveBase, arm, intake);
+
+        break; 
+      case kDefaultAuto:
+        auton = null;
+
+        break;
+      default:
+        // Put default auto code here
+        auton = null;
+        break;
+    }
+  }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    time = m_timer.get();
+
+    NetworkTableEntry tx = table.getEntry("tx");
+    NetworkTableEntry ty = table.getEntry("ty");
+    NetworkTableEntry ta = table.getEntry("ta");
+
+    //read values periodically
+    double x = tx.getDouble(0.0);
+    double y = ty.getDouble(0.0);
+    double area = ta.getDouble(0.0);
+
+
+    if(auton!=null){
+      auton.run(time, x);
+    }
+  }
 
   @Override
   public void teleopInit() {
@@ -215,7 +324,7 @@ public class Robot extends TimedRobot {
       armOveride = !armOveride;
     }
 
-    if(armOveride == false){
+    if(armOveride){
       arm.setShoulderPower(shoulderPower);
     }else{
       arm.setShoulderPosition(elbowPosition);
