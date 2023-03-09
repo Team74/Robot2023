@@ -11,6 +11,9 @@ import javax.lang.model.util.ElementScanner14;
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.AxisCamera;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -41,21 +44,31 @@ public class Robot extends TimedRobot {
   XboxController driveController = new XboxController(0);
   XboxController opController = new XboxController(1);
 
-  private Intake intake = new Intake(42, 43, 4);
+  private Intake intake = new Intake(5, 6, 9);
+  private Arm arm = new Arm(4, 4);
   private DriveBase driveBase = new DriveBase(swerveModules, gyro);
 
   NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
 
   int speedMode;
 
-  int elbowLevel = 1;
+  double elbowPosition = 0;
+
+  boolean opPOVPressed = false;
+
+  boolean armOveride = false;
 
   @Override
   public void robotInit() {
+    UsbCamera camera = CameraServer.startAutomaticCapture(0);
+
     driveBase.resetGyro();
     double xVelocity;
     double yVelocity;
     double rotationVelocity;
+
+    elbowPosition = 0;
+    arm.setStart();
   }
 
   @Override
@@ -70,6 +83,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     speedMode = 2;
+    elbowPosition = 0;
+    arm.setStart();
+    armOveride = false;
   }
 
   @Override
@@ -90,6 +106,8 @@ public class Robot extends TimedRobot {
     double yVelocity = -driveController.getLeftY();
     double rotationVelocity = driveController.getRightX();
 
+    double shoulderPower = opController.getRightY();
+
     if(xVelocity < 0.05 && xVelocity > -0.05){
       xVelocity = 0;
     }
@@ -100,14 +118,22 @@ public class Robot extends TimedRobot {
       rotationVelocity = 0;
     }
 
+    if(shoulderPower < 0.05 && shoulderPower > -0.05){
+      shoulderPower = 0;
+    }
+
     if(driveController.getRightBumperPressed() & speedMode < 3){
       speedMode = speedMode + 1;
     } 
-    if(driveController.getLeftBumperPressed() & speedMode > 1){
+    if(driveController.getLeftBumperPressed() & speedMode > 0){
       speedMode = speedMode - 1;
     }
 
-    if(speedMode == 1){
+    if(speedMode == 0){
+      xVelocity = xVelocity * 0.5;
+      yVelocity = yVelocity * 0.5;
+      rotationVelocity = rotationVelocity * 75;
+    }else if(speedMode == 1){
       xVelocity = xVelocity * 1;
       yVelocity = yVelocity * 1;
       rotationVelocity = rotationVelocity * 100;
@@ -121,22 +147,44 @@ public class Robot extends TimedRobot {
       rotationVelocity = rotationVelocity * 200;
     } 
 
-    if(opController.getPOV() == 0.0){
-      elbowLevel++;
+    shoulderPower = shoulderPower * 0.35;
+
+    if(opController.getPOV() == 0.0 ){
+      if(!opPOVPressed){
+        elbowPosition += 10;
+      }
+      opPOVPressed = true;
     }else if(opController.getPOV() == 180.0){
-      elbowLevel--;
+      if(!opPOVPressed){
+        elbowPosition -= 10;
+      }
+      opPOVPressed = true;
+    }else if(opController.getPOV() == 90.0 ){
+      if(!opPOVPressed){
+        elbowPosition += 2.5;
+      }
+      opPOVPressed = true;
+    }else if(opController.getPOV() == 270.0){
+      if(!opPOVPressed){
+        elbowPosition -= 2.5;
+      }
+      opPOVPressed = true;
+    }else{
+      opPOVPressed = false;
     }
 
-    elbowLevel = MathUtil.clamp(elbowLevel, 1, 8);
+    elbowPosition = MathUtil.clamp(elbowPosition, 0, 100);
 
     if(opController.getAButton()){
-      elbowLevel = 1;
+      elbowPosition = 10;
     }else if(opController.getBButton()){
-      elbowLevel = 2;
+      elbowPosition = 77.5;
     }else if(opController.getYButtonPressed()){
-      elbowLevel = 3;
+      elbowPosition = 90;
     }else if(opController.getXButton()){
-      elbowLevel = 4;
+      elbowPosition = 80;
+    }else if(opController.getRightBumperPressed()){
+      elbowPosition = 0.0;
     }
 
     if(driveController.getYButtonPressed()){
@@ -152,14 +200,26 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("X Velocity", xVelocity);
     SmartDashboard.putNumber("Y Velocity", yVelocity);
     SmartDashboard.putNumber("R Velocity", rotationVelocity);
+    SmartDashboard.putNumber("Shoulder Power", shoulderPower);
 
     driveBase.printSwerveAngles();
     driveBase.printSwerveSpeeds();
-    driveBase.updatePIDLoops();
+    //driveBase.updatePIDLoops();
+
+    arm.getShoulderPosition();
+    arm.updateShoulderPID();
 
     intakeControl(opController);
 
-    
+    if(opController.getStartButtonPressed()){
+      armOveride = !armOveride;
+    }
+
+    if(armOveride == false){
+      arm.setShoulderPower(shoulderPower);
+    }else{
+      arm.setShoulderPosition(elbowPosition);
+    }
   }
 
   @Override
@@ -181,12 +241,12 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {}
 
   public void intakeControl(XboxController controller) {
-    boolean rightBumper = controller.getRightBumper();
-    boolean leftBumper = controller.getLeftBumper();
+    double rightTrigger = controller.getRightTriggerAxis();
+    double leftTrigger = controller.getLeftTriggerAxis();
 
-    if(rightBumper) {
+    if(rightTrigger > 0.05) {
       intake.intakeObject();
-    }else if(leftBumper){
+    }else if(leftTrigger > 0.05){
       intake.outtakeObject();
     }else{
       intake.stopMotors();
