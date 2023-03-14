@@ -8,5 +8,6 @@ public class AutonSubstation2 extends Auton{
     }
     
     public void run(double time, double x){
+        driveBase.autoBalance2();
     }
 }

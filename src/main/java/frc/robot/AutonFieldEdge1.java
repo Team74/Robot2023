@@ -29,7 +29,7 @@ public class AutonFieldEdge1 extends Auton{
             driveBase.moveRobotFieldOriented(0.1, 0.5, -100);
             arm.setShoulderPosition(0);
             intake.intakeObject();
-        }else if(time <14.0){
+        }else if(time <14.5){
             driveBase.moveRobotFieldOriented(0.08, 0.5, 0.0);
             arm.setShoulderPosition(0);
             intake.intakeObject();
@@ -38,6 +38,5 @@ public class AutonFieldEdge1 extends Auton{
             arm.setShoulderPosition(0);
             intake.stopMotors();
         }
-
     }
 }

@@ -16,7 +16,7 @@ public class Arm {
 
     double kP, kI, kD, kFF;
 
-    double encoderOffset = 111.15;
+    double encoderOffset = 77.3;
     double lastSavedAngle;
     double lastTargetPosition;
 
@@ -50,7 +50,7 @@ public class Arm {
 
     public void setStart(){
         lastSavedAngle = 0.0;
-        lastTargetPosition = 0.0;
+        lastTargetPosition = getShoulderPosition();
     }
 
     public void updateShoulderPID(){

@@ -44,6 +44,12 @@ public class DriveBase {
         return angle;
     }
 
+    public double getPitchAngle(){
+        double angle = gyro.getPitch();
+        SmartDashboard.putNumber("Robot Pitch", angle);
+        return angle;
+    }
+
     public void resetGyro(){
         gyro.reset();
     }
@@ -77,6 +83,16 @@ public class DriveBase {
         }
     }
 
+    public void lockWheels(){
+        for(int i = 0; i < 4; i++){
+            swerveModules[i].setDriveSpeed(0.0);
+        }
+        swerveModules[0].goToAngle(45);
+        swerveModules[1].goToAngle(135);
+        swerveModules[2].goToAngle(135);
+        swerveModules[3].goToAngle(45);
+    }
+
     public void moveRobotRobotOriented(double xVelocity, double yVelocity, double rotationVelocity){
         rotationVelocity = rotationVelocity * Math.PI / 180.0;
         robotSpeed = new ChassisSpeeds(yVelocity, -xVelocity, -rotationVelocity);
@@ -106,6 +122,20 @@ public class DriveBase {
         }
 
         moveRobotFieldOriented(0.0, velocity, 0.0);
+    }
+
+    public void autoBalance2(){
+        double velocity = 0.25;
+
+        
+        if(getPitchAngle() < -8){
+            moveRobotFieldOriented(0.0, -velocity, 0.0);
+        }else if(getPitchAngle() <= 8){
+            lockWheels();
+        }else{
+            moveRobotFieldOriented(0.0, velocity, 0.0);
+        }
+        
     }
 
     public void spinSwerve1(){

@@ -117,6 +117,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    driveBase.resetGyro();
     m_timer.reset();
     m_timer.start();
 
@@ -227,7 +228,7 @@ public class Robot extends TimedRobot {
       rotationVelocity = 0;
     }
 
-    if(shoulderPower < 0.05 && shoulderPower > -0.05){
+    if(shoulderPower < 0.10 && shoulderPower > -0.10){
       shoulderPower = 0;
     }
 
@@ -285,11 +286,11 @@ public class Robot extends TimedRobot {
     elbowPosition = MathUtil.clamp(elbowPosition, 0, 100);
 
     if(opController.getAButton()){
-      elbowPosition = 10;
+      elbowPosition = 15;
     }else if(opController.getBButton()){
       elbowPosition = 77.5;
     }else if(opController.getYButtonPressed()){
-      elbowPosition = 90;
+      elbowPosition = 92.5;
     }else if(opController.getXButton()){
       elbowPosition = 80;
     }else if(opController.getRightBumperPressed()){
@@ -304,12 +305,14 @@ public class Robot extends TimedRobot {
       //driveBase.autoBalance();
     }else{
       driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
+      //driveBase.moveRobotFieldOriented(0, 0, 0);  //Meters per second & degrees per second
     }
 
     SmartDashboard.putNumber("X Velocity", xVelocity);
     SmartDashboard.putNumber("Y Velocity", yVelocity);
     SmartDashboard.putNumber("R Velocity", rotationVelocity);
     SmartDashboard.putNumber("Shoulder Power", shoulderPower);
+    SmartDashboard.putBoolean("Manual Shoulder", armOveride);
 
     driveBase.printSwerveAngles();
     driveBase.printSwerveSpeeds();
@@ -322,7 +325,9 @@ public class Robot extends TimedRobot {
 
     if(opController.getStartButtonPressed()){
       armOveride = !armOveride;
-    }
+      arm.setStart();    }
+
+    SmartDashboard.putNumber("OpRighty", shoulderPower);
 
     if(armOveride){
       arm.setShoulderPower(shoulderPower);
