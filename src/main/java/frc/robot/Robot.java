@@ -82,6 +82,8 @@ public class Robot extends TimedRobot {
 
   boolean armOveride = false;
 
+  boolean lockWheels = false;
+
   double time = 0.0;
   
   @Override
@@ -232,15 +234,18 @@ public class Robot extends TimedRobot {
       shoulderPower = 0;
     }
 
-    if(driveController.getLeftBumperPressed() & speedMode > 0){
+    if(driveController.getLeftBumper()){
       speedMode = 0;
-    }else if(driveController.getRightBumperPressed() & speedMode < 3){
+    }else if(driveController.getRightBumperPressed()){
       speedMode = 2;
     }else{
       speedMode = 1;
     }
-    
 
+    if(driveController.getBButtonPressed()){
+      lockWheels = !lockWheels;
+    }
+    
     if(speedMode == 0){
       xVelocity = xVelocity * 0.5;
       yVelocity = yVelocity * 0.5;
@@ -298,8 +303,8 @@ public class Robot extends TimedRobot {
       driveBase.resetGyro();
     }
 
-    if(driveController.getBButton()){
-      //driveBase.autoBalance();
+    if(lockWheels){
+      driveBase.lockWheels();
     }else{
       driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
       //driveBase.moveRobotFieldOriented(0, 0, 0);  //Meters per second & degrees per second
