@@ -232,12 +232,14 @@ public class Robot extends TimedRobot {
       shoulderPower = 0;
     }
 
-    if(driveController.getRightBumperPressed() & speedMode < 3){
-      speedMode = speedMode + 1;
-    } 
     if(driveController.getLeftBumperPressed() & speedMode > 0){
-      speedMode = speedMode - 1;
+      speedMode = 0;
+    }else if(driveController.getRightBumperPressed() & speedMode < 3){
+      speedMode = 2;
+    }else{
+      speedMode = 1;
     }
+    
 
     if(speedMode == 0){
       xVelocity = xVelocity * 0.5;
@@ -248,14 +250,9 @@ public class Robot extends TimedRobot {
       yVelocity = yVelocity * 1;
       rotationVelocity = rotationVelocity * 100;
     } else if(speedMode == 2){
-      xVelocity = xVelocity * 2;
-      yVelocity = yVelocity * 2;
-      rotationVelocity = rotationVelocity * 150;
-    } else if(speedMode == 3){
       xVelocity = xVelocity * 3;
       yVelocity = yVelocity * 3;
       rotationVelocity = rotationVelocity * 200;
-    } 
 
     shoulderPower = shoulderPower * 0.35;
 
