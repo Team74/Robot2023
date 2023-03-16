@@ -100,7 +100,7 @@ public class DriveBase {
         for(int i = 0; i < 4; i++){
             SwerveModuleState optimizedModuleState = SwerveModuleState.optimize(moduleStates[i], Rotation2d.fromDegrees(swerveModules[i].getSwerveAngle()));
             swerveModules[i].goToAngle(optimizedModuleState.angle.getDegrees());
-            swerveModules[i].setDriveSpeed(optimizedModuleState.speedMetersPerSecond);
+            swerveModules[i].setDriveSpeed(optimizedModuleState.speedMetersPerSecond/6);
         }
     }
 

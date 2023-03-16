@@ -21,12 +21,16 @@ public class Intake {
     }
 
     public void intakeObject() {
-        if(intakeLimit.get()){
+        if(!intakeLimit.get()){
             stopMotors();
         }else{
             leftIntake.set(intakeSpeed);
             rightIntake.set(intakeSpeed);
         }
+    }
+
+    public boolean intakeLimit(){
+        return !intakeLimit.get();
     }
 
     public void outtakeObject() {

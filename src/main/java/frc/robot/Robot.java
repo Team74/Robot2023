@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -84,7 +85,11 @@ public class Robot extends TimedRobot {
 
   boolean lockWheels = false;
 
+  boolean rumble = false;
+
   double time = 0.0;
+
+  double rumbleTime = 0.0;
   
   @Override
   public void robotInit() {
@@ -236,7 +241,7 @@ public class Robot extends TimedRobot {
 
     if(driveController.getLeftBumper()){
       speedMode = 0;
-    }else if(driveController.getRightBumperPressed()){
+    }else if(driveController.getRightBumper()){
       speedMode = 2;
     }else{
       speedMode = 1;
@@ -258,6 +263,7 @@ public class Robot extends TimedRobot {
       xVelocity = xVelocity * 3;
       yVelocity = yVelocity * 3;
       rotationVelocity = rotationVelocity * 200;
+    }
 
     shoulderPower = shoulderPower * 0.35;
 
@@ -285,8 +291,6 @@ public class Robot extends TimedRobot {
       opPOVPressed = false;
     }
 
-    elbowPosition = MathUtil.clamp(elbowPosition, 0, 100);
-
     if(opController.getAButton()){
       elbowPosition = 15;
     }else if(opController.getBButton()){
@@ -299,15 +303,50 @@ public class Robot extends TimedRobot {
       elbowPosition = 0.0;
     }
 
+    if(intake.intakeLimit()){
+      elbowPosition = MathUtil.clamp(elbowPosition, 15, 100);
+    }else{
+      elbowPosition = MathUtil.clamp(elbowPosition, 0, 100);
+    }
+
     if(driveController.getYButtonPressed()){
       driveBase.resetGyro();
     }
 
+    if(intake.intakeLimit() && rumbleTime > 0){
+      rumble = true;
+      rumbleTime = rumbleTime - 0.02;
+    }else if(intake.intakeLimit()){
+      rumble = false;
+      rumbleTime = rumbleTime - 0.02;
+    }else{
+      rumble = false;
+      rumbleTime = rumbleTime + 0.02;
+    }
+
     if(lockWheels){
       driveBase.lockWheels();
+    }else if(arm.getShoulderPosition() < 10 && intake.intakeLimit() && rumble && !armOveride){
+      driveBase.moveRobotRobotOriented(0, -0.5, 0);
     }else{
       driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
       //driveBase.moveRobotFieldOriented(0, 0, 0);  //Meters per second & degrees per second
+    }
+
+    SmartDashboard.putBoolean("Intake Limit", intake.intakeLimit());
+
+    rumbleTime = MathUtil.clamp(rumbleTime, -0.5, 0.5);
+
+    if(rumble){
+      driveController.setRumble(RumbleType.kLeftRumble, 1.0);
+      driveController.setRumble(RumbleType.kRightRumble, 1.0);
+      opController.setRumble(RumbleType.kLeftRumble, 1.0);
+      opController.setRumble(RumbleType.kRightRumble, 1.0);
+    }else{
+      driveController.setRumble(RumbleType.kLeftRumble, 0.0);
+      driveController.setRumble(RumbleType.kRightRumble, 0.0);
+      opController.setRumble(RumbleType.kLeftRumble, 0.0);
+      opController.setRumble(RumbleType.kRightRumble, 0.0);
     }
 
     SmartDashboard.putNumber("X Velocity", xVelocity);
@@ -339,22 +378,22 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit(){}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic(){}
 
   @Override
-  public void testInit() {}
+  public void testInit(){}
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic(){}
 
   @Override
-  public void simulationInit() {}
+  public void simulationInit(){}
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic(){}
 
   public void intakeControl(XboxController controller) {
     double rightTrigger = controller.getRightTriggerAxis();
