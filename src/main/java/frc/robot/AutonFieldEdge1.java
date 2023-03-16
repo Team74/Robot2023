@@ -2,7 +2,7 @@ package frc.robot;
 
 public class AutonFieldEdge1 extends Auton{
 
-    public AutonFieldEdge1(DriveBase driveBase, Arm arm, Intake intake) {
+    public AutonFieldEdge1(DriveBase driveBase, Arm arm, Intake intake, boolean isBlue) {
         super(driveBase, arm, intake);
         //TODO Auto-generated constructor stub
     }
@@ -23,14 +23,26 @@ public class AutonFieldEdge1 extends Auton{
             arm.setShoulderPosition(85);
             intake.stopMotors();
         }else if(time <7.0){
-            driveBase.moveRobotFieldOriented(-0.5, 0.0, 0.0);
+            if(isBlue){
+                driveBase.moveRobotFieldOriented(0.5, 0.0, 0.0);
+            }else{
+                driveBase.moveRobotFieldOriented(-.5, 0.0, 0.0);
+            }
             arm.setShoulderPosition(0);
         }else if(driveBase.getGyroAngle() > 10 && driveBase.getGyroAngle() < 350 && time <14.0){
-            driveBase.moveRobotFieldOriented(0.1, 0.5, -100);
+            if(isBlue){
+                driveBase.moveRobotFieldOriented(-0.1, 0.5, 100);
+            }else{
+                driveBase.moveRobotFieldOriented(0.1, 0.5, 100);
+            }
             arm.setShoulderPosition(0);
             intake.intakeObject();
         }else if(time <14.5){
-            driveBase.moveRobotFieldOriented(0.08, 0.5, 0.0);
+            if(isBlue){
+                driveBase.moveRobotFieldOriented(-0.08, 0.5, 0.0);
+            }else{
+                driveBase.moveRobotFieldOriented(0.08, 0.5, 0.0);
+            }
             arm.setShoulderPosition(0);
             intake.intakeObject();
         }else{
