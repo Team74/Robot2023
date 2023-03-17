@@ -144,27 +144,27 @@ public class Robot extends TimedRobot {
 
       case kAutoSubstation1:
         // Put custom auto code here
-        auton = new AutonSubstation1(driveBase, arm, intake);
+        auton = new AutonSubstation1(driveBase, arm, intake, m_colorSelected);
 
         break;
       case kAutoSubstation2:
         // Put custom auto code here
-        auton = new AutonSubstation2(driveBase, arm, intake);
+        auton = new AutonSubstation2(driveBase, arm, intake, m_colorSelected);
 
         break;
       case kAutoCenter:
         // Put custom auto code here
-        auton = new AutonCenter(driveBase, arm, intake);
+        auton = new AutonCenter(driveBase, arm, intake, m_colorSelected);
 
         break;
       case kAutoFieldEdge1:
         // Put custom auto code here
-        auton = new AutonFieldEdge1(driveBase, arm, intake);
+        auton = new AutonFieldEdge1(driveBase, arm, intake, m_colorSelected);
 
         break;
       case kAutoFieldEdge2:
         // Put custom auto code here
-        auton = new AutonFieldEdge2(driveBase, arm, intake);
+        auton = new AutonFieldEdge2(driveBase, arm, intake, m_colorSelected);
 
         break; 
       case kDefaultAuto:

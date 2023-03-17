@@ -62,7 +62,9 @@ public class AutonFieldEdge2 extends Auton{
         }else if(i == 4){
             rotation = 100;
             if(driveBase.getGyroAngle() > 10 && driveBase.getGyroAngle() < 350){
-                rotation = 0;
+                rotation = 10;
+            }else if(driveBase.getGyroAngle() > 2.5 && driveBase.getGyroAngle() < 357.5){
+                rotation = 10;
             }
 
             if(isBlue){

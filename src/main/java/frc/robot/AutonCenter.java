@@ -2,8 +2,8 @@ package frc.robot;
 
 public class AutonCenter extends Auton{
 
-    public AutonCenter(DriveBase driveBase, Arm arm, Intake intake) {
-        super(driveBase, arm, intake);
+    public AutonCenter(DriveBase driveBase, Arm arm, Intake intake, boolean isBlue) {
+        super(driveBase, arm, intake, isBlue);
         //TODO Auto-generated constructor stub
     }
     

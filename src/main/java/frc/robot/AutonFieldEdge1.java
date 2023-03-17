@@ -3,7 +3,7 @@ package frc.robot;
 public class AutonFieldEdge1 extends Auton{
 
     public AutonFieldEdge1(DriveBase driveBase, Arm arm, Intake intake, boolean isBlue) {
-        super(driveBase, arm, intake);
+        super(driveBase, arm, intake, isBlue);
         //TODO Auto-generated constructor stub
     }
     
@@ -31,7 +31,7 @@ public class AutonFieldEdge1 extends Auton{
             arm.setShoulderPosition(0);
         }else if(driveBase.getGyroAngle() > 10 && driveBase.getGyroAngle() < 350 && time <14.0){
             if(isBlue){
-                driveBase.moveRobotFieldOriented(-0.1, 0.5, 100);
+                driveBase.moveRobotFieldOriented(-0.1, 0.5, -100);
             }else{
                 driveBase.moveRobotFieldOriented(0.1, 0.5, 100);
             }

@@ -8,11 +8,13 @@ public class Auton {
     protected Arm arm;
     protected Intake intake;
     protected NetworkTable table;
+    protected boolean isBlue;
 
-    public Auton(DriveBase driveBase, Arm arm, Intake intake){
+    public Auton(DriveBase driveBase, Arm arm, Intake intake, boolean isBlue){
         this.driveBase = driveBase;
         this.arm = arm;
         this.intake = intake;
+        this.isBlue = isBlue;
 
         table = NetworkTableInstance.getDefault().getTable("limelight");
 
