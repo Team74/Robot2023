@@ -18,6 +18,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
@@ -90,6 +91,8 @@ public class Robot extends TimedRobot {
   double time = 0.0;
 
   double rumbleTime = 0.0;
+
+  RGBLEDs LEDs;
   
   @Override
   public void robotInit() {
@@ -116,7 +119,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("Auton Choices 1", m_auto_chooser);
     SmartDashboard.putData("Auton Color Choices 1", m_color_chooser);
-  
+    
+    LEDs = new RGBLEDs();
   }
 
   @Override
@@ -195,6 +199,8 @@ public class Robot extends TimedRobot {
     if(auton!=null){
       auton.run(time, x);
     }
+
+    LEDs.updateState();
   }
 
   @Override
@@ -203,6 +209,8 @@ public class Robot extends TimedRobot {
     elbowPosition = 0;
     arm.setStart();
     armOveride = false;
+  
+    LEDs.setRed();
   }
 
   @Override
@@ -377,10 +385,24 @@ public class Robot extends TimedRobot {
     }else{
       arm.setShoulderPosition(elbowPosition);
     }
+
+ if(driveController.getXButtonPressed()){
+      LEDs.setPurple();
+    }
+
+  if(driveController.getAButtonPressed()){
+      LEDs.setYellow();
+    }
+
+    LEDs.updateState();
+
+   
   }
 
   @Override
-  public void disabledInit(){}
+  public void disabledInit(){
+    LEDs.setOff();
+  }
 
   @Override
   public void disabledPeriodic(){}
