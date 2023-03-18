@@ -83,6 +83,13 @@ public class DriveBase {
         }
     }
 
+    public void stopWheels(){
+        for(int i = 0; i < 4; i++){
+            swerveModules[i].setRotationPower(0.0);;
+            swerveModules[i].setDrivePower(0.0);
+        }
+    }
+
     public void lockWheels(){
         for(int i = 0; i < 4; i++){
             swerveModules[i].setDriveSpeed(0.0);

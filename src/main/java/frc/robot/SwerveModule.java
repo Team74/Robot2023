@@ -49,10 +49,12 @@ public class SwerveModule {
         drivePID.setFF(kFF);
         drivePID.setOutputRange(kMinOutput, kMaxOutput);
 
+        driveMotor.burnFlash();
+
         anglePID = new PIDController(0.005, 0.0, 0.0001);
 
         anglePID.enableContinuousInput(0.0, 360.0);
-        anglePID.setTolerance(4,3);
+        anglePID.setTolerance(4,2);
         anglePID.reset();
 
     }

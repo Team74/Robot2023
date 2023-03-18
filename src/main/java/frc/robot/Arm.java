@@ -16,9 +16,11 @@ public class Arm {
 
     double kP, kI, kD, kFF;
 
-    double encoderOffset = 77.3;
+    double encoderOffset = 88.46 - 1.30 + 4.03 + 1.2;
     double lastSavedAngle;
     double lastTargetPosition;
+    double lastShoulderPosition;
+    double armSpeed = 1;
 
     Arm(int shoulderMotorID, int shoulderEncoderPort){
 
@@ -27,12 +29,13 @@ public class Arm {
 
         lastSavedAngle = 0.0;
         lastTargetPosition = 0.0;
+        lastShoulderPosition = 0.0;
 
         // PID coefficients
         kP = 0.010000; 
         kI = 0.000100;
         kD = 0.000000; 
-        kFF = 0.001500; 
+        kFF = 0.000800; 
 
         SmartDashboard.putNumber("P Gain", kP);
         SmartDashboard.putNumber("I Gain", kI);
@@ -75,7 +78,7 @@ public class Arm {
         angle = angle % 120;
         angle = (angle + 120) % 120;
         angle = (-1.0* angle) + 120;
-        if(angle > 115){
+        if(angle > 110){
             angle = angle - 120;
         }
 
@@ -90,14 +93,19 @@ public class Arm {
     }
 
     public void setShoulderPosition(double targetPosition){
-        if(targetPosition < lastTargetPosition - 1){
-            targetPosition = lastTargetPosition - 1;
-        }else if(targetPosition > lastTargetPosition + 1){
-            targetPosition = lastTargetPosition + 1;
+        armSpeed = 4 * Math.abs(lastShoulderPosition-getShoulderPosition());
+
+        armSpeed = MathUtil.clamp(armSpeed, 1.5, 5);
+        
+        if(targetPosition < lastTargetPosition - armSpeed){
+            targetPosition = lastTargetPosition - armSpeed;
+        }else if(targetPosition > lastTargetPosition + armSpeed){
+            targetPosition = lastTargetPosition + armSpeed;
         }
 
         SmartDashboard.putNumber("Target Shoulder", targetPosition);
         lastTargetPosition = targetPosition;
+        lastShoulderPosition = getShoulderPosition();
 
         double shoulderMotorPower = shoulderPID.calculate(getShoulderPosition(), targetPosition);
                 

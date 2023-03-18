@@ -225,13 +225,13 @@ public class Robot extends TimedRobot {
 
     double shoulderPower = opController.getRightY();
 
-    if(xVelocity < 0.05 && xVelocity > -0.05){
+    if(xVelocity < 0.075 && xVelocity > -0.075){
       xVelocity = 0;
     }
-    if(yVelocity < 0.05 && yVelocity > -0.05){
+    if(yVelocity < 0.075 && yVelocity > -0.075){
       yVelocity = 0;
     }
-    if(rotationVelocity < 0.05 && rotationVelocity > -0.05){
+    if(rotationVelocity < 0.075 && rotationVelocity > -0.075){
       rotationVelocity = 0;
     }
 
@@ -294,9 +294,9 @@ public class Robot extends TimedRobot {
     if(opController.getAButton()){
       elbowPosition = 15;
     }else if(opController.getBButton()){
-      elbowPosition = 77.5;
+      elbowPosition = 82.0;
     }else if(opController.getYButtonPressed()){
-      elbowPosition = 92.5;
+      elbowPosition = 93.5;
     }else if(opController.getXButton()){
       elbowPosition = 80;
     }else if(opController.getRightBumperPressed()){
@@ -328,6 +328,8 @@ public class Robot extends TimedRobot {
       driveBase.lockWheels();
     }else if(arm.getShoulderPosition() < 10 && intake.intakeLimit() && rumble && !armOveride){
       driveBase.moveRobotRobotOriented(0, -0.5, 0);
+    }else if(xVelocity == 0 && yVelocity == 0 && rotationVelocity == 0){
+      driveBase.stopWheels();
     }else{
       driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
       //driveBase.moveRobotFieldOriented(0, 0, 0);  //Meters per second & degrees per second
