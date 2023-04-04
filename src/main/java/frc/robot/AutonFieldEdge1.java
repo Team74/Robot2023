@@ -7,7 +7,7 @@ public class AutonFieldEdge1 extends Auton{
         //TODO Auto-generated constructor stub
     }
     
-    public void run(double time, double x){
+    public void run(double time, double x, double a){
 
         if(time < 2.0){
             arm.setShoulderPosition(85);

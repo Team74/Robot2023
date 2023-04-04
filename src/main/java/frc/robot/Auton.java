@@ -20,6 +20,6 @@ public class Auton {
 
     }
 
-    public void run(double time, double x){
+    public void run(double time, double x, double a){
     }
 }

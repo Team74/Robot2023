@@ -16,7 +16,7 @@ public class Arm {
 
     double kP, kI, kD, kFF;
 
-    double encoderOffset = 88.46 - 1.30 + 4.03 + 1.2;
+    double encoderOffset = -1.72;
     double lastSavedAngle;
     double lastTargetPosition;
     double lastShoulderPosition;
@@ -37,22 +37,22 @@ public class Arm {
         kD = 0.000000; 
         kFF = 0.000800; 
 
-        SmartDashboard.putNumber("P Gain", kP);
+        /*SmartDashboard.putNumber("P Gain", kP);
         SmartDashboard.putNumber("I Gain", kI);
         SmartDashboard.putNumber("D Gain", kD);
         SmartDashboard.putNumber("I Zone", 0.0);
         SmartDashboard.putNumber("Feed Forward", kFF);
         SmartDashboard.putNumber("Max Output", 0.0);
-        SmartDashboard.putNumber("Min Output", 0.0);
+        SmartDashboard.putNumber("Min Output", 0.0);*/
 
         shoulderPID = new PIDController(kP, kI, kD);
 
-        shoulderPID.setTolerance(0.5,5.0);
+        shoulderPID.setTolerance(0.5,1.0);
         shoulderPID.reset();
     }
 
     public void setStart(){
-        lastSavedAngle = 0.0;
+        lastSavedAngle = getShoulderPosition();
         lastTargetPosition = getShoulderPosition();
     }
 
@@ -116,6 +116,10 @@ public class Arm {
         shoulderMotorPower = MathUtil.clamp(shoulderMotorPower, -0.4, 0.4);
 
         shoulderMotorPower += kFF * targetPosition;
+
+        if(shoulderMotorPower < 0.05 && shoulderMotorPower > -0.05){
+            shoulderMotorPower = 0.0;
+        }
 
         SmartDashboard.putNumber("Shoulder Power", shoulderMotorPower);
 

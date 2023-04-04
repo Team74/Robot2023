@@ -39,8 +39,8 @@ public class SwerveModule {
         kD = 0.000000; 
         kIz = 0; 
         kFF = 0.001050; 
-        kMaxOutput = 0.75; 
-        kMinOutput = -0.75;
+        kMaxOutput = 0.95; 
+        kMinOutput = -0.95;
 
         drivePID.setP(kP);
         drivePID.setI(kI);
@@ -48,6 +48,14 @@ public class SwerveModule {
         drivePID.setIZone(kIz);
         drivePID.setFF(kFF);
         drivePID.setOutputRange(kMinOutput, kMaxOutput);
+
+        SmartDashboard.putNumber("P Gain", kP);
+        SmartDashboard.putNumber("I Gain", kI);
+        SmartDashboard.putNumber("D Gain", kD);
+        SmartDashboard.putNumber("I Zone", kIz);
+        SmartDashboard.putNumber("Feed Forward", kFF);
+        SmartDashboard.putNumber("Max Output", kMaxOutput);
+        SmartDashboard.putNumber("Min Output", kMinOutput);
 
         driveMotor.burnFlash();
 

@@ -6,65 +6,95 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 
 /** Add your docs here. */
 public class RGBLEDs {
     AddressableLED m_led;
     AddressableLEDBuffer m_ledBuffer;
-    int currentLEDNumber = 0;
-    int desiredState = 0;
-    void RGBLEDs(){
-        m_led = new AddressableLED(0);
-        m_ledBuffer = new AddressableLEDBuffer(59);
+    int ledLength = 125;
+
+    int currentPurpleNumber = ledLength;
+    int currentYellowNumber = ledLength;
+    int currentRedNumber = ledLength;
+    int currentBlueNumber = ledLength;
+    int currentRainbowNumber = ledLength;
+
+    int currentOffNumber = 0;
+
+    public RGBLEDs(){
+        m_led = new AddressableLED(9);
+        m_ledBuffer = new AddressableLEDBuffer(ledLength);
         m_led.setLength(m_ledBuffer.getLength());
         m_led.setData(m_ledBuffer);
         m_led.start();
     }
-    void setRed(){
-        if(desiredState != 1){
-            setOff();
-            currentLEDNumber = 0;
-            desiredState = 1;
-        }
-    }
+
     void setPurple(){
-        if(desiredState != 2){
-            setOff();
-            currentLEDNumber = 0;
-            desiredState = 2;
-        }
+        currentPurpleNumber = 0;
     }
+
     void setYellow(){
-        if(desiredState != 3){
-            setOff();
-            currentLEDNumber = 0;
-            desiredState = 3;
-        }
+        currentYellowNumber = 0;
     }
-    void updateState(){
-        if(desiredState == 0){
-            setOff();
-        }else if(desiredState == 1){
-            m_ledBuffer.setRGB(currentLEDNumber, 255, 0, 0);
-            if(currentLEDNumber < m_ledBuffer.getLength()){
-                currentLEDNumber++;
-            }
-        }else if(desiredState == 2){
-            m_ledBuffer.setRGB(currentLEDNumber, 75, 0, 130);
-            if(currentLEDNumber < m_ledBuffer.getLength()){
-                currentLEDNumber++;
-            }  
-        }else if(desiredState == 3){
-            m_ledBuffer.setRGB(currentLEDNumber, 255, 234, 0);
-            if(currentLEDNumber < m_ledBuffer.getLength()){
-                currentLEDNumber++;
-            }
-        }
-        m_led.setData(m_ledBuffer);
+
+    void setRed(){
+        currentRedNumber = 0;
     }
+
+    void setBlue(){
+        currentBlueNumber = 0;
+    }
+
     void setOff(){
-        for (var i = 0; i < m_ledBuffer.getLength(); i++){
+        currentOffNumber = 0;
+    }
+
+    void setAllOff(){
+        int currentPurpleNumber = ledLength;
+        int currentYellowNumber = ledLength;
+        int currentRedNumber = ledLength;
+        int currentBlueNumber = ledLength;
+        int currentOffNumber = ledLength;
+        int currentRainbowNumber = ledLength;
+
+        for (var i = 0; i < ledLength; i++){
             m_ledBuffer.setRGB(i, 0, 0, 0);
+        } 
+    }
+
+    void updateState(){
+        if(currentPurpleNumber < ledLength){
+            m_ledBuffer.setRGB(currentPurpleNumber, 100, 0, 100);
+            currentPurpleNumber++;
+            SmartDashboard.putNumber("Current LED", currentPurpleNumber);
         }
+
+        if(currentYellowNumber < ledLength){
+            m_ledBuffer.setRGB(currentYellowNumber, 150, 100, 0);
+            currentYellowNumber++;
+            SmartDashboard.putNumber("Current LED", currentYellowNumber);
+        }
+
+        if(currentRedNumber < ledLength){
+            m_ledBuffer.setRGB(currentRedNumber, 150, 0, 0);
+            currentRedNumber++;
+            SmartDashboard.putNumber("Current LED", currentRedNumber);
+        }
+
+        if(currentBlueNumber < ledLength){
+            m_ledBuffer.setRGB(currentBlueNumber, 0, 0, 150);
+            currentBlueNumber++;
+            SmartDashboard.putNumber("Current LED", currentBlueNumber);
+        }
+
+        if(currentOffNumber < ledLength){
+            m_ledBuffer.setRGB(currentOffNumber, 0, 0, 0);
+            currentOffNumber++;
+            SmartDashboard.putNumber("Current LED", currentOffNumber);
+        }
+
+        m_led.setData(m_ledBuffer);
     }
 }

@@ -39,17 +39,17 @@ public class Robot extends TimedRobot {
    */
   AHRS gyro = new AHRS();
   SwerveModule[] swerveModules = {
-    new SwerveModule(14, 16, 0, 67.7), //Front Left
-    new SwerveModule(19, 18, 1, 101.2), //Front Right
-    new SwerveModule(17 , 12, 2, 44.8), //Back Left
-    new SwerveModule(10, 11, 3, 354.4)  //Back Right
+    new SwerveModule(14, 16, 0, 65.75), //Front Left
+    new SwerveModule(19, 18, 1, 99.87), //Front Right
+    new SwerveModule(17 , 12, 2, 44.41), //Back Left
+    new SwerveModule(10, 11, 3, 359.12)  //Back Right
   };
 
   XboxController driveController = new XboxController(0);
   XboxController opController = new XboxController(1);
 
   private Intake intake = new Intake(5, 6, 9);
-  private Arm arm = new Arm(4, 4);
+  private Arm arm = new Arm(2, 4);
 
   private static final String kDefaultAuto = "Default";
   private static final String kAutoSubstation1 = "AutonSubstation1";
@@ -58,6 +58,7 @@ public class Robot extends TimedRobot {
   private static final String kAutoFieldEdge1 = "AutonFieldEdge1";
   private static final String kAutoFieldEdge2 = "AutonFieldEdge2";
 
+  NetworkTable limelightTable;
 
   private static final String kBlue = "Blue";
   private static final String kRed = "Red";
@@ -74,8 +75,6 @@ public class Robot extends TimedRobot {
 
   private Auton auton;
 
-  NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-
   int speedMode;
 
   double elbowPosition = 0;
@@ -88,12 +87,14 @@ public class Robot extends TimedRobot {
 
   boolean rumble = false;
 
+  boolean limitOveride = false;
+
   double time = 0.0;
 
   double rumbleTime = 0.0;
 
-  RGBLEDs LEDs;
-  
+  RGBLEDs LEDs = new RGBLEDs();
+
   @Override
   public void robotInit() {
     UsbCamera camera = CameraServer.startAutomaticCapture(0);
@@ -119,8 +120,11 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putData("Auton Choices 1", m_auto_chooser);
     SmartDashboard.putData("Auton Color Choices 1", m_color_chooser);
+
+    limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
     
-    LEDs = new RGBLEDs();
+    NetworkTableEntry pipeline = limelightTable.getEntry("pipeline");
+    pipeline.setNumber(0);
   }
 
   @Override
@@ -186,18 +190,19 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     time = m_timer.get();
 
-    NetworkTableEntry tx = table.getEntry("tx");
-    NetworkTableEntry ty = table.getEntry("ty");
-    NetworkTableEntry ta = table.getEntry("ta");
+    NetworkTableEntry tx = limelightTable.getEntry("tx");
+    NetworkTableEntry ty = limelightTable.getEntry("ty");
+    NetworkTableEntry ta = limelightTable.getEntry("ta");
 
     //read values periodically
     double x = tx.getDouble(0.0);
     double y = ty.getDouble(0.0);
     double area = ta.getDouble(0.0);
 
+    SmartDashboard.putNumber("Limelight x", x);
 
     if(auton!=null){
-      auton.run(time, x);
+      auton.run(time, x, area);
     }
 
     LEDs.updateState();
@@ -206,26 +211,43 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     speedMode = 2;
-    elbowPosition = 0;
+    elbowPosition = arm.getShoulderPosition();
     arm.setStart();
     armOveride = false;
-  
-    LEDs.setRed();
+    limitOveride = false;
+    intake.setLimitOveride(false);
+
+    if(m_color_chooser.getSelected() == kBlue){
+      m_colorSelected = true;
+    }else{
+      m_colorSelected = false;
+    }
+
+    if(m_colorSelected){
+      LEDs.setBlue();
+    }else{
+      LEDs.setRed();
+    }
+
+    SmartDashboard.putBoolean("Is Blue?", m_colorSelected);
+
   }
 
   @Override
   public void teleopPeriodic() {
 
-    NetworkTableEntry tx = table.getEntry("tx");
-    NetworkTableEntry ty = table.getEntry("ty");
-    NetworkTableEntry ta = table.getEntry("ta");
-
     //NetworkTableEntry ledMode = table.getEntry("ledMode");
     //ledMode.setNumber(0);      // 1 = force off,   0 = follow pipeline
+
+    NetworkTableEntry tx = limelightTable.getEntry("tx");
+    NetworkTableEntry ty = limelightTable.getEntry("ty");
+    NetworkTableEntry ta = limelightTable.getEntry("ta");
 
     double x = tx.getDouble(0.0);
     double y = ty.getDouble(0.0);
     double area = ta.getDouble(0.0);
+
+    SmartDashboard.putNumber("Limelight x", x);
 
     double xVelocity = driveController.getLeftX();
     double yVelocity = -driveController.getLeftY();
@@ -264,12 +286,12 @@ public class Robot extends TimedRobot {
       yVelocity = yVelocity * 0.5;
       rotationVelocity = rotationVelocity * 75;
     }else if(speedMode == 1){
-      xVelocity = xVelocity * 1;
-      yVelocity = yVelocity * 1;
+      xVelocity = xVelocity * 1.25;
+      yVelocity = yVelocity * 1.25;
       rotationVelocity = rotationVelocity * 100;
     } else if(speedMode == 2){
-      xVelocity = xVelocity * 3;
-      yVelocity = yVelocity * 3;
+      xVelocity = xVelocity * 3.0;
+      yVelocity = yVelocity * 3.0;
       rotationVelocity = rotationVelocity * 200;
     }
 
@@ -300,19 +322,19 @@ public class Robot extends TimedRobot {
     }
 
     if(opController.getAButton()){
-      elbowPosition = 15;
+      elbowPosition = 20;
     }else if(opController.getBButton()){
       elbowPosition = 82.0;
     }else if(opController.getYButtonPressed()){
-      elbowPosition = 93.5;
+      elbowPosition = 97.5;
     }else if(opController.getXButton()){
-      elbowPosition = 80;
+      elbowPosition = 81.5;
     }else if(opController.getRightBumperPressed()){
       elbowPosition = 0.0;
     }
 
     if(intake.intakeLimit()){
-      elbowPosition = MathUtil.clamp(elbowPosition, 15, 100);
+      elbowPosition = MathUtil.clamp(elbowPosition, 20, 100);
     }else{
       elbowPosition = MathUtil.clamp(elbowPosition, 0, 100);
     }
@@ -334,14 +356,18 @@ public class Robot extends TimedRobot {
 
     if(lockWheels){
       driveBase.lockWheels();
-    }else if(arm.getShoulderPosition() < 10 && intake.intakeLimit() && rumble && !armOveride){
+    }else if(arm.getShoulderPosition() < 15 && intake.intakeLimit() && rumble && !armOveride){
       driveBase.moveRobotRobotOriented(0, -0.5, 0);
-    }else if(xVelocity == 0 && yVelocity == 0 && rotationVelocity == 0){
+    }else{
+      driveBase.moveRobotAccel(xVelocity, yVelocity, rotationVelocity);
+    }
+    
+    /*else if(xVelocity == 0 && yVelocity == 0 && rotationVelocity == 0){
       driveBase.stopWheels();
     }else{
       driveBase.moveRobotFieldOriented(xVelocity, yVelocity, rotationVelocity);  //Meters per second & degrees per second
       //driveBase.moveRobotFieldOriented(0, 0, 0);  //Meters per second & degrees per second
-    }
+    }*/
 
     SmartDashboard.putBoolean("Intake Limit", intake.intakeLimit());
 
@@ -370,13 +396,15 @@ public class Robot extends TimedRobot {
     //driveBase.updatePIDLoops();
 
     arm.getShoulderPosition();
-    arm.updateShoulderPID();
+    //arm.updateShoulderPID();
 
     intakeControl(opController);
 
     if(opController.getStartButtonPressed()){
       armOveride = !armOveride;
-      arm.setStart();    }
+      arm.setStart();
+      elbowPosition = arm.getShoulderPosition();    
+    }
 
     SmartDashboard.putNumber("OpRighty", shoulderPower);
 
@@ -386,22 +414,33 @@ public class Robot extends TimedRobot {
       arm.setShoulderPosition(elbowPosition);
     }
 
- if(driveController.getXButtonPressed()){
-      LEDs.setPurple();
+    if(opController.getBackButtonPressed()){
+      limitOveride = !limitOveride;
+      intake.setLimitOveride(limitOveride);
     }
 
-  if(driveController.getAButtonPressed()){
-      LEDs.setYellow();
+    if(opController.getLeftBumperPressed()){
+      if(m_colorSelected){
+        LEDs.setBlue();
+      }else{
+        LEDs.setRed();
+      }
+    }
+
+    if(opController.getLeftStickButtonPressed()){
+        LEDs.setPurple();
+    }
+
+    if(opController.getRightStickButtonPressed()){
+        LEDs.setYellow();
     }
 
     LEDs.updateState();
-
-   
   }
 
   @Override
   public void disabledInit(){
-    LEDs.setOff();
+    LEDs.setAllOff();
   }
 
   @Override

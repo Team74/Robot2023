@@ -7,8 +7,36 @@ public class AutonSubstation1 extends Auton{
         //TODO Auto-generated constructor stub
     }
     
-    public void run(double time, double x){
+    public void run(double time, double x, double a){
+        double rotation;
+        if(isBlue){
+            rotation = -150;
 
+            if(driveBase.getGyroAngle() < 182.5 && driveBase.getGyroAngle() > 177.5){
+                rotation = 0;
+            }else if(driveBase.getGyroAngle() < 190 && driveBase.getGyroAngle() > 180){
+                rotation = -30;
+            }else if(driveBase.getGyroAngle() > 170 && driveBase.getGyroAngle() < 180){
+                rotation = 30;
+            }else if(driveBase.getGyroAngle() < 170 && driveBase.getGyroAngle() > 90){
+                rotation = 75;
+            }
+        }else{
+            rotation = 150;
+            if(driveBase.getGyroAngle() < 182.5 && driveBase.getGyroAngle() > 177.5){
+                rotation = 0;
+            }else if(driveBase.getGyroAngle() < 190 && driveBase.getGyroAngle() > 180){
+                rotation = -30;
+            }else if(driveBase.getGyroAngle() > 170 && driveBase.getGyroAngle() < 180){
+                rotation = 30;
+            }else if(driveBase.getGyroAngle() > 190 && driveBase.getGyroAngle() < 270){
+                rotation = -75;
+            }
+        } 
+
+        driveBase.moveRobotFieldOriented(0, 0, rotation);
+
+        /* 
         if(time < 2.0){
             arm.setShoulderPosition(85);
         }else if(time < 3.5){
@@ -49,6 +77,6 @@ public class AutonSubstation1 extends Auton{
             driveBase.moveRobotFieldOriented(0.0, 0.0, 0.0);
             arm.setShoulderPosition(0);
             intake.stopMotors();
-        }
+        }*/
     }
 }

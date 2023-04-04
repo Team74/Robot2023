@@ -17,6 +17,9 @@ public class DriveBase {
     SwerveModuleState[] moduleStates;
     double forwardOffset = 0.225;
     double sideOffset = 0.35;
+    double lastNormalizedSpeed = 0.0;
+    double lastXVelocity = 0.0;
+    double lastYVelocity = 0.0;
 
     DriveBase(SwerveModule[] swerveModules, AHRS gyro){
         this.gyro = gyro;
@@ -109,6 +112,64 @@ public class DriveBase {
             swerveModules[i].goToAngle(optimizedModuleState.angle.getDegrees());
             swerveModules[i].setDriveSpeed(optimizedModuleState.speedMetersPerSecond/6);
         }
+    }
+
+    public void moveRobotAccel(double xVelocity, double yVelocity, double rotationVelocity){
+        yVelocity = -yVelocity;
+
+        double normalSpeed = Math.sqrt(Math.pow(xVelocity, 2) + Math.pow(yVelocity, 2));
+
+        SmartDashboard.putNumber("Normal Speed", normalSpeed);
+
+        if(yVelocity != 0 || xVelocity != 0){
+            double movementAngle = Math.atan2(yVelocity, xVelocity);
+            movementAngle = movementAngle * 180 / Math.PI;
+            movementAngle = movementAngle + 180;
+
+            if(movementAngle < 0.0){
+                movementAngle = movementAngle + 360;
+            }
+
+            SmartDashboard.putNumber("Field Movement Angle", movementAngle);
+
+            movementAngle = movementAngle - getGyroAngle() + 180;
+
+            if(movementAngle < 0.0){
+                movementAngle = movementAngle + 360;
+            }
+
+            SmartDashboard.putNumber("Robot Movement Angle", movementAngle);
+
+            movementAngle = movementAngle * Math.PI / 180;
+
+            xVelocity = 1 * Math.cos(movementAngle) * normalSpeed;
+            yVelocity = -1 * Math.sin(movementAngle) * normalSpeed;
+        }else{
+            xVelocity = 0.0;
+            yVelocity = 0.0;
+        }
+
+        if(xVelocity - 0.3 > lastXVelocity){
+            xVelocity = lastXVelocity + 0.3;
+        }else if(xVelocity + 0.3 < lastXVelocity){
+            xVelocity = lastXVelocity - 0.3;
+        }
+
+        if(yVelocity - 0.1 > lastYVelocity){
+            yVelocity = lastYVelocity + 0.1;
+        }else if(yVelocity + 0.2 < lastYVelocity){
+            yVelocity = lastYVelocity - 0.2;
+        }
+
+        lastXVelocity = xVelocity;
+        lastYVelocity = yVelocity;
+        
+        if(xVelocity == 0 && yVelocity == 0.0 && rotationVelocity == 0.0){
+            stopWheels();
+        }else{
+            moveRobotRobotOriented(xVelocity, yVelocity, rotationVelocity);
+        }
+
     }
 
     public void autoBalance(){
