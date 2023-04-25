@@ -279,6 +279,7 @@ public class Robot extends TimedRobot {
 
     if(driveController.getBButtonPressed()){
       lockWheels = !lockWheels;
+      LEDs.setRainbow();
     }
     
     if(speedMode == 0){
@@ -326,9 +327,9 @@ public class Robot extends TimedRobot {
     }else if(opController.getBButton()){
       elbowPosition = 82.0;
     }else if(opController.getYButtonPressed()){
-      elbowPosition = 97.5;
+      elbowPosition = 99.0;
     }else if(opController.getXButton()){
-      elbowPosition = 81.5;
+      elbowPosition = 80.50;
     }else if(opController.getRightBumperPressed()){
       elbowPosition = 0.0;
     }

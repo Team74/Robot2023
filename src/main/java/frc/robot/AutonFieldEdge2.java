@@ -75,14 +75,32 @@ public class AutonFieldEdge2 extends Auton{
                 lastSavedTime = time;
             }
         }else if(i == 5){
-            rotation = -100;
-            if(driveBase.getGyroAngle() < 2.5 || driveBase.getGyroAngle() > 357.5){
-                rotation = 0;
-            }else if(driveBase.getGyroAngle() < 10){
-                rotation = -15;
-            }else if(driveBase.getGyroAngle() > 350){
-                rotation = 15;
-            }
+            if(isBlue){
+                rotation = 100;
+    
+                if(driveBase.getGyroAngle() < 2.5 || driveBase.getGyroAngle() > 357.5){
+                    rotation = 0;
+                }else if(driveBase.getGyroAngle() < 10){
+                    rotation = 30;
+                }else if(driveBase.getGyroAngle() > 350){
+                    rotation = -30;
+                }else if(driveBase.getGyroAngle() > 90){
+                    rotation = -100;
+                }
+            }else{
+                rotation = 100;
+
+                if(driveBase.getGyroAngle() < 2.5 || driveBase.getGyroAngle() > 357.5){
+                    rotation = 0;
+                }else if(driveBase.getGyroAngle() < 10){
+                    rotation = -30;
+                }else if(driveBase.getGyroAngle() > 350){
+                    rotation = 30;
+                }else if(driveBase.getGyroAngle() < 270){
+                    rotation = -100;
+                }
+            } 
+
             xVelocity = -0.325;
             yVelocity = 2.0;
 
@@ -164,13 +182,13 @@ public class AutonFieldEdge2 extends Auton{
         }else if(i == 10){
             override = true;
             double speed = 0;
-            if(a < .275){
+            if(a < .150){
                 speed = -0.3;
-            }else if(a > 0.280){
+            }else if(a > 0.170){
                 speed = 0.2;
             }
 
-            driveBase.moveRobotFieldOriented(0.1, speed, (x - 3) * 2);
+            driveBase.moveRobotFieldOriented(0.1, speed, (x - 5) * 2);
             arm.setShoulderPosition(97.5);
             intake.stopMotors();
 

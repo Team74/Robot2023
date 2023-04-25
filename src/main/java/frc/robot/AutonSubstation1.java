@@ -10,31 +10,38 @@ public class AutonSubstation1 extends Auton{
     public void run(double time, double x, double a){
         double rotation;
         if(isBlue){
-            rotation = -150;
+            rotation = 100;
 
-            if(driveBase.getGyroAngle() < 182.5 && driveBase.getGyroAngle() > 177.5){
+            if(driveBase.getGyroAngle() < 2.5 || driveBase.getGyroAngle() > 357.5){
                 rotation = 0;
-            }else if(driveBase.getGyroAngle() < 190 && driveBase.getGyroAngle() > 180){
+            }else if(driveBase.getGyroAngle() < 10){
                 rotation = -30;
-            }else if(driveBase.getGyroAngle() > 170 && driveBase.getGyroAngle() < 180){
+            }else if(driveBase.getGyroAngle() > 350){
                 rotation = 30;
-            }else if(driveBase.getGyroAngle() < 170 && driveBase.getGyroAngle() > 90){
-                rotation = 75;
+            }else if(driveBase.getGyroAngle() < 270){
+                rotation = -100;
             }
         }else{
-            rotation = 150;
-            if(driveBase.getGyroAngle() < 182.5 && driveBase.getGyroAngle() > 177.5){
+            rotation = 100;
+
+            if(driveBase.getGyroAngle() < 2.5 || driveBase.getGyroAngle() > 357.5){
                 rotation = 0;
-            }else if(driveBase.getGyroAngle() < 190 && driveBase.getGyroAngle() > 180){
-                rotation = -30;
-            }else if(driveBase.getGyroAngle() > 170 && driveBase.getGyroAngle() < 180){
+            }else if(driveBase.getGyroAngle() < 10){
                 rotation = 30;
-            }else if(driveBase.getGyroAngle() > 190 && driveBase.getGyroAngle() < 270){
-                rotation = -75;
+            }else if(driveBase.getGyroAngle() > 350){
+                rotation = -30;
+            }else if(driveBase.getGyroAngle() > 90){
+                rotation = -100;
             }
         } 
 
-        driveBase.moveRobotFieldOriented(0, 0, rotation);
+        if(isBlue){
+            driveBase.moveRobotFieldOriented(0, 0, -rotation);
+        }else{
+            driveBase.moveRobotFieldOriented(0, 0, rotation);
+        }
+
+        arm.setShoulderPosition(0);
 
         /* 
         if(time < 2.0){

@@ -33,9 +33,9 @@ public class Arm {
 
         // PID coefficients
         kP = 0.010000; 
-        kI = 0.000100;
+        kI = 0.000500;
         kD = 0.000000; 
-        kFF = 0.000800; 
+        kFF = 0.000600; 
 
         /*SmartDashboard.putNumber("P Gain", kP);
         SmartDashboard.putNumber("I Gain", kI);
@@ -47,7 +47,7 @@ public class Arm {
 
         shoulderPID = new PIDController(kP, kI, kD);
 
-        shoulderPID.setTolerance(0.5,1.0);
+        shoulderPID.setTolerance(0.0,1.0);
         shoulderPID.reset();
     }
 
@@ -106,6 +106,30 @@ public class Arm {
         SmartDashboard.putNumber("Target Shoulder", targetPosition);
         lastTargetPosition = targetPosition;
         lastShoulderPosition = getShoulderPosition();
+
+        double i;
+        double p;
+
+        if(Math.abs(getShoulderPosition() - targetPosition) < 2){
+            i = 0.000500;
+            p = 0.100000;
+        }else if(Math.abs(getShoulderPosition() - targetPosition) < 10){
+            i = 0.000500;
+            p = 0.020000;
+        }else{
+            i = 0.000500;
+            p = 0.010000;
+        }
+
+        if(i != kI){
+            kI = i;
+            shoulderPID.setI(i);
+        }
+
+        if(p != kP){
+            kP = p;
+            shoulderPID.setP(p);
+        }
 
         double shoulderMotorPower = shoulderPID.calculate(getShoulderPosition(), targetPosition);
                 

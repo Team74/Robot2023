@@ -13,13 +13,15 @@ import edu.wpi.first.wpilibj.util.Color;
 public class RGBLEDs {
     AddressableLED m_led;
     AddressableLEDBuffer m_ledBuffer;
-    int ledLength = 125;
+    int ledLength = 127;
 
     int currentPurpleNumber = ledLength;
     int currentYellowNumber = ledLength;
     int currentRedNumber = ledLength;
     int currentBlueNumber = ledLength;
     int currentRainbowNumber = ledLength;
+
+    int currentRainbowOffset = 0;
 
     int currentOffNumber = 0;
 
@@ -33,22 +35,31 @@ public class RGBLEDs {
 
     void setPurple(){
         currentPurpleNumber = 0;
+        currentRainbowNumber = ledLength;
     }
 
     void setYellow(){
         currentYellowNumber = 0;
+        currentRainbowNumber = ledLength;
     }
 
     void setRed(){
         currentRedNumber = 0;
+        currentRainbowNumber = ledLength;
     }
 
     void setBlue(){
         currentBlueNumber = 0;
+        currentRainbowNumber = ledLength;
+    }
+
+    void setRainbow(){
+        currentRainbowNumber = 1;
     }
 
     void setOff(){
         currentOffNumber = 0;
+        currentRainbowNumber = ledLength;
     }
 
     void setAllOff(){
@@ -93,6 +104,40 @@ public class RGBLEDs {
             m_ledBuffer.setRGB(currentOffNumber, 0, 0, 0);
             currentOffNumber++;
             SmartDashboard.putNumber("Current LED", currentOffNumber);
+        }
+
+        if(currentRainbowNumber < ledLength){
+            int red = 0;
+            int green = 0;
+            int blue = 0;
+            int currentID;
+
+
+            for(int i = 0; i < currentRainbowNumber; i++){
+                currentID = (i + currentRainbowOffset) % 48 + 48;
+
+                if(currentID < 16){
+                    red = currentID * 10;
+                    green = 0;
+                    blue = 160 - (currentID * 10);
+                }else if(currentID <  32){
+                    green = (currentID-16) * 10;
+                    blue = 0;
+                    red = 160 - ((currentID-16) * 10);
+                }else{
+                    blue = (currentID-32) * 10;
+                    red = 0;
+                    green = 160 - ((currentID-32) * 10);
+                }
+
+                m_ledBuffer.setRGB(i, red, green, blue);
+            }
+
+            if(currentRainbowNumber < ledLength - 1){
+                currentRainbowNumber++;
+            }
+
+            currentRainbowOffset--;
         }
 
         m_led.setData(m_ledBuffer);
